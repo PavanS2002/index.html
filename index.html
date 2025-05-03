@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Color Predictor</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    .color-box { width: 100px; height: 100px; margin: auto; border-radius: 10px; }
+    .red { background-color: red; }
+    .green { background-color: green; }
+    .result { font-size: 24px; margin-top: 20px; }
+    .log { margin-top: 20px; font-size: 14px; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>🔮 Smart Color Predictor</h1>
+
+  <div class="color-box" id="predictionBox"></div>
+  <div class="result" id="resultText">Click to predict...</div>
+  <button onclick="predictColor()">Predict Next Color</button>
+
+  <div class="log">
+    <strong>History:</strong> <span id="historyLog">None</span>
+  </div>
+
+  <script>
+    let history = [];
+
+    function addControlledRandomness(prediction, confidence) {
+      const rand = Math.random() * 100;
+      return rand < confidence ? prediction : (prediction === 'Red' ? 'Green' : 'Red');
+    }
+
+    async function aiPredictReal(history) {
+      try {
+        const response = await fetch("http://localhost:5000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ history })
+        });
+
+        if (!response.ok) throw new Error("AI prediction failed");
+
+        const data = await response.json();
+        return {
+          prediction: data.prediction,
+          confidence: data.confidence
+        };
+      } catch (err) {
+        console.error(err);
+        return { prediction: "Red", confidence: 50 }; // fallback
+      }
+    }
+
+    async function predictColor() {
+      const ai = await aiPredictReal(history);
+      const finalPrediction = addControlledRandomness(ai.prediction, ai.confidence);
+
+      history.push(finalPrediction);
+
+      document.getElementById('predictionBox').className = 'color-box ' + finalPrediction.toLowerCase();
+      document.getElementById('resultText').innerText = `Predicted: ${finalPrediction} (AI Confidence: ${ai.confidence}%)`;
+      document.getElementById('historyLog').innerText = history.join(', ');
+    }
+  </script>
+</body>
+</html>
