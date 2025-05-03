@@ -4,17 +4,24 @@
   <meta charset="UTF-8">
   <title>Smart Color Predictor</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
     .color-box { width: 100px; height: 100px; margin: auto; border-radius: 10px; }
     .red { background-color: red; }
     .green { background-color: green; }
-    .result { font-size: 24px; margin-top: 20px; }
+    .result { font-size: 22px; margin-top: 20px; }
     .log { margin-top: 20px; font-size: 14px; }
-    button { padding: 10px 20px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+    input { padding: 8px; font-size: 14px; width: 120px; margin-top: 10px; }
   </style>
 </head>
 <body>
   <h1>🔮 Smart Color Predictor</h1>
+
+  <!-- Period Number Input -->
+  <div>
+    <label for="periodInput"><strong>Enter Period Number:</strong></label><br>
+    <input type="number" id="periodInput" placeholder="e.g. 101">
+  </div>
 
   <div class="color-box" id="predictionBox"></div>
   <div class="result" id="resultText">Click to predict...</div>
@@ -54,13 +61,17 @@
     }
 
     async function predictColor() {
+      const periodInput = document.getElementById('periodInput').value;
+      const periodNumber = periodInput.trim() === "" ? "N/A" : periodInput;
+
       const ai = await aiPredictReal(history);
       const finalPrediction = addControlledRandomness(ai.prediction, ai.confidence);
 
       history.push(finalPrediction);
 
       document.getElementById('predictionBox').className = 'color-box ' + finalPrediction.toLowerCase();
-      document.getElementById('resultText').innerText = `Predicted: ${finalPrediction} (AI Confidence: ${ai.confidence}%)`;
+      document.getElementById('resultText').innerText = 
+        `Period ${periodNumber} ➤ Predicted: ${finalPrediction} (AI Confidence: ${ai.confidence}%)`;
       document.getElementById('historyLog').innerText = history.join(', ');
     }
   </script>
